@@ -26,3 +26,8 @@ class RegisterForm(FlaskForm):
         p = re.compile(r"(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[*?!'^+%&/()=}{$#@<>])")
         if not p.match(self.password.data):
             raise ValidationError('Password must contain 1 number, 1 special character, 1 uppercase and 1 lowercase letter')
+
+    def validate_phone(self, phone):
+        t = re.compile(r"(\d{4})(-{1})(\d{3})(-{1})(\d{4})")
+        if not t.match(self.phone.data):
+            raise ValidationError('Invalid phone number. Phone number must be in the form XXXX-XXX-XXXX')
