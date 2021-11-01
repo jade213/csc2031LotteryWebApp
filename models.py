@@ -1,6 +1,6 @@
 import base64
 from datetime import datetime
-from flask_login import UserMixin
+from flask_login import LoginManager, UserMixin
 from Crypto.Protocol.KDF import scrypt
 from Crypto.Random import get_random_bytes
 from cryptography.fernet import Fernet
@@ -55,7 +55,6 @@ class User(db.Model, UserMixin):
 
 class Draw(db.Model):
     __tablename__ = 'draws'
-
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
