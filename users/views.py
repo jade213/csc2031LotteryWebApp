@@ -46,6 +46,8 @@ def register():
         db.session.add(new_user)
         db.session.commit()
 
+        logging.warning('SECURITY - User registration [%s, %s]', form.email.data, request.remote_addr)
+
         # sends user to login page
         return redirect(url_for('users.login'))
     # if request method is GET or form not valid re-render signup page
@@ -55,6 +57,8 @@ def register():
 # view user login
 @users_blueprint.route('/login', methods=['GET', 'POST'])
 def login():
+    login_attempts=0
+
     if not session.get('logins'):
         session['logins'] = 0
     elif session.get('logins') >= 3:
@@ -74,8 +78,16 @@ def login():
                 flash("You've reached the maximum login attempts, close your browser and try again.")
             elif session['logins'] == 2:
                 flash('Please check your login details and try again, 1 login attempt remaining.')
+                login_attempts=2
             else:
                 flash('Please check your login details and try again, 2 login attempts remaining.')
+                login_attempts=1
+
+            if login_attempts==3:
+                logging.warning('SECURITY - Maximum invalid login attempts [%s]', request.remote_addr)
+            elif login_attempts==2 or login_attempts==1:
+                logging.warning('SECURITY - Invalid login attempts %s time [%s]', login_attempts, request.remote_addr)
+
             return render_template('login.html', form=form)
 
         if pyotp.TOTP(user.pin_key).verify(form.pin.data):
@@ -89,6 +101,7 @@ def login():
             db.session.add(user)
             db.session.commit()
 
+            logging.warning('SECURITY - User login [%s, %s]', form.username.data, request.remote_addr)
 
         else:
             flash("Invalid 2FA token", "danger")
@@ -101,6 +114,7 @@ def login():
 @users_blueprint.route('/logout')
 @login_required
 def logout():
+    logging.warning('SECURITY - Log out [%s, %s, %s]', current_user.id, current_user.email, request.remote_addr)
     logout_user()
     return redirect(url_for('index'))
 
