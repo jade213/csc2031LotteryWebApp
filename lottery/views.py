@@ -1,4 +1,5 @@
 # IMPORTS
+import copy
 import logging
 
 from flask import Blueprint, render_template, request, flash
@@ -44,12 +45,20 @@ def add_draw():
 @lottery_blueprint.route('/view_draws', methods=['POST'])
 def view_draws():
     # get all draws that have not been played [played=0]
-    playable_draws = Draw.query.filter_by(played=False).all()  # TODO: filter playable draws for current user
+    playable_draws = Draw.query.filter_by(user_id=current_user.id, played=False).all()
 
     # if playable draws exist
     if len(playable_draws) != 0:
         # re-render lottery page with playable draws
-        return render_template('lottery.html', playable_draws=playable_draws)
+        draw_copies = list(map(lambda x: copy.deepcopy(x), playable_draws))
+
+        decrypted_draws = []
+
+        for d in draw_copies:
+            d.decrypt_draw(draw_key)
+            decrypted_draws.append(d)
+
+        return render_template('lottery.html', playable_draws=decrypted_draws)
     else:
         flash('No playable draws.')
         return lottery()
@@ -59,7 +68,7 @@ def view_draws():
 @lottery_blueprint.route('/check_draws', methods=['POST'])
 def check_draws():
     # get played draws
-    played_draws = Draw.query.filter_by(played=True).all()  # TODO: filter played draws for current user
+    played_draws = Draw.query.filter_by(played=True, id=user.id).all()
 
     # if played draws exist
     if len(played_draws) != 0:
@@ -74,7 +83,7 @@ def check_draws():
 # delete all played draws
 @lottery_blueprint.route('/play_again', methods=['POST'])
 def play_again():
-    delete_played = Draw.__table__.delete().where(Draw.played)  # TODO: delete played draws for current user only
+    delete_played = Draw.__table__.delete().where(Draw.played, id=user.id)
     db.session.execute(delete_played)
     db.session.commit()
 
