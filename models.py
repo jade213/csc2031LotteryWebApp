@@ -57,7 +57,7 @@ class User(db.Model, UserMixin):
         self.current_logged_in = None
 
 
-class Draw(db.Model):
+class Draw(db.Model, UserMixin):
     __tablename__ = 'draws'
 
     id = db.Column(db.Integer, primary_key=True)

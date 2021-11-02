@@ -15,6 +15,7 @@ def character_check(form, field):
 class LoginForm(FlaskForm):
     username = StringField(validators=[Required(), Email()])
     password = PasswordField(validators=[Required()])
+    pin = StringField(validators=[Required(),Length(min=6, max=6, message="PIN key should be exactly 6 characters long")])
     submit = SubmitField()
 
 

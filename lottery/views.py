@@ -47,16 +47,17 @@ def view_draws():
     # get all draws that have not been played [played=0]
     playable_draws = Draw.query.filter_by(user_id=current_user.id, played=False).all()
 
+    draw_copies = copy.deepcopy(playable_draws)
+
+    decrypted_draws = []
+
+    for d in draw_copies:
+        d.decrypt_draw(draw_key)
+        decrypted_draws.append(d)
+
     # if playable draws exist
     if len(playable_draws) != 0:
         # re-render lottery page with playable draws
-        draw_copies = list(map(lambda x: copy.deepcopy(x), playable_draws))
-
-        decrypted_draws = []
-
-        for d in draw_copies:
-            d.decrypt_draw(draw_key)
-            decrypted_draws.append(d)
 
         return render_template('lottery.html', playable_draws=decrypted_draws)
     else:
