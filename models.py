@@ -84,7 +84,7 @@ def init_db():
     db.drop_all()
     db.create_all()
     admin = User(email='admin@email.com',
-                 password='Admin1!',
+                 password=generate_password_hash('Admin1!'),
                  pin_key='BFB5S34STBLZCOB22K6PPYDCMZMH46OJ',
                  firstname='Alice',
                  lastname='Jones',
