@@ -7,9 +7,14 @@ from flask_login import current_user, login_required
 
 from app import db, requires_roles
 from models import User, Draw
+from cryptography.fernet import Fernet
 
 # CONFIG
 lottery_blueprint = Blueprint('lottery', __name__, template_folder='templates')
+
+
+def decrypt(data, draw_key):
+    return Fernet(draw_key).decrypt(data).decode("utf-8")
 
 
 # VIEWS
@@ -29,6 +34,7 @@ def add_draw():
     for i in range(6):
         submitted_draw += request.form.get('no' + str(i + 1)) + ' '
     submitted_draw.strip()
+
 
     # create a new draw with the form data.
     new_draw = Draw(user_id=current_user.id, draw=submitted_draw, win=False, round=0, draw_key=current_user.draw_key)
@@ -54,8 +60,10 @@ def view_draws():
     decrypted_draws = []
 
     for d in draw_copies:
-        user = User.query.filter_by(username=d.username).first()
-        d.decrypt_draw(user.draw_key)
+        #user = User.query.filter_by(username=d.username).first()
+        #d.decrypt_draw(user.draw_key)
+        #d.decrypt_draw(current_user.draw_key)
+        d.draw = decrypt(d.draw, current_user.draw_key)
         decrypted_draws.append(d)
 
     # if playable draws exist
@@ -74,7 +82,15 @@ def view_draws():
 @requires_roles('user')
 def check_draws():
     # get played draws
-    played_draws = Draw.query.filter_by(played=True, id=current_user.id).all()
+    played_draws = Draw.query.filter_by(user_id = current_user.id, played=True, id=current_user.id).all()
+
+    draw_copies = copy.deepcopy(played_draws)
+
+    decrypted_draws = []
+
+    for d in draw_copies:
+        d.draw = decrypt(d.draw, current_user.draw_key)
+        decrypted_draws.append(d)
 
     # if played draws exist
     if len(played_draws) != 0:
