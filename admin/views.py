@@ -1,6 +1,6 @@
 # IMPORTS
 from flask import Blueprint, render_template, request, flash
-from flask_login import login_required
+from flask_login import login_required, current_user
 from app import db, requires_roles
 from models import User, Draw
 
@@ -14,7 +14,7 @@ admin_blueprint = Blueprint('admin', __name__, template_folder='templates')
 @login_required
 @requires_roles('admin')
 def admin():
-    return render_template('admin.html', name="PLACEHOLDER FOR FIRSTNAME")
+    return render_template('admin.html', name="current_user.firstname")
 
 
 # view all registered users
@@ -22,7 +22,7 @@ def admin():
 @login_required
 @requires_roles('admin')
 def view_all_users():
-    return render_template('admin.html', name="PLACEHOLDER FOR FIRSTNAME",
+    return render_template('admin.html', name="current_user.firstname",
                            current_users=User.query.filter_by(role='user').all())
 
 
@@ -76,7 +76,7 @@ def view_winning_draw():
     # if a winning draw exists
     if current_winning_draw:
         # re-render admin page with current winning draw and lottery round
-        return render_template('admin.html', winning_draw=current_winning_draw, name="PLACEHOLDER FOR FIRSTNAME")
+        return render_template('admin.html', winning_draw=current_winning_draw, name="current_user.firstname")
 
     # if no winning draw exists, rerender admin page
     flash("No winning draw exists. Please add winning draw.")
@@ -137,7 +137,7 @@ def run_lottery():
             if len(results) == 0:
                 flash("No winners.")
 
-            return render_template('admin.html', results=results, name="PLACEHOLDER FOR FIRSTNAME")
+            return render_template('admin.html', results=results, name="current_user.firstname")
 
         flash("No user draws entered.")
         return admin()
@@ -156,4 +156,4 @@ def logs():
         content = f.read().splitlines()[-10:]
         content.reverse()
 
-    return render_template('admin.html', logs=content, name="PLACEHOLDER FOR FIRSTNAME")
+    return render_template('admin.html', logs=content, name="current_user.firstname")
