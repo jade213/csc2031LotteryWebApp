@@ -1,6 +1,6 @@
 import base64
 from datetime import datetime
-from flask_login import LoginManager, UserMixin
+from flask_login import UserMixin
 from Crypto.Protocol.KDF import scrypt
 from Crypto.Random import get_random_bytes
 from cryptography.fernet import Fernet

@@ -1,16 +1,13 @@
 # IMPORTS
 import logging
 from datetime import datetime
-from functools import wraps
-
 from flask import Blueprint, render_template, flash, redirect, url_for, request, session
 from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.security import check_password_hash
+import pyotp
 from app import db
-#from lottery.views import user
 from models import User
 from users.forms import RegisterForm, LoginForm
-import pyotp
 
 # CONFIG
 users_blueprint = Blueprint('users', __name__, template_folder='templates')
@@ -57,7 +54,7 @@ def register():
 # view user login
 @users_blueprint.route('/login', methods=['GET', 'POST'])
 def login():
-    login_attempts=0
+    login_attempts = 0
 
     if not session.get('logins'):
         session['logins'] = 0
@@ -74,18 +71,18 @@ def login():
 
         if not user or not check_password_hash(user.password, form.password.data):
 
-            if session['logins'] ==3:
+            if session['logins'] == 3:
                 flash("You've reached the maximum login attempts, close your browser and try again.")
             elif session['logins'] == 2:
                 flash('Please check your login details and try again, 1 login attempt remaining.')
-                login_attempts=2
+                login_attempts = 2
             else:
                 flash('Please check your login details and try again, 2 login attempts remaining.')
-                login_attempts=1
+                login_attempts = 1
 
-            if login_attempts==3:
+            if login_attempts == 3:
                 logging.warning('SECURITY - Maximum invalid login attempts [%s]', request.remote_addr)
-            elif login_attempts==2 or login_attempts==1:
+            elif login_attempts == 2 or login_attempts == 1:
                 logging.warning('SECURITY - Invalid login attempts %s time [%s]', login_attempts, request.remote_addr)
 
             return render_template('login.html', form=form)
@@ -102,7 +99,6 @@ def login():
             db.session.commit()
 
             logging.warning('SECURITY - User login [%s, %s]', form.username.data, request.remote_addr)
-
 
         else:
             flash("Invalid 2FA token", "danger")
@@ -135,4 +131,3 @@ def account():
                            firstname=current_user.firstname,
                            lastname=current_user.lastname,
                            phone=current_user.phone)
-

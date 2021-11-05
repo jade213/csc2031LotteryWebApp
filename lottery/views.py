@@ -1,13 +1,10 @@
 # IMPORTS
 import copy
-import logging
-
 from flask import Blueprint, render_template, request, flash
 from flask_login import current_user, login_required
-
-from app import db, requires_roles
-from models import User, Draw
 from cryptography.fernet import Fernet
+from app import db, requires_roles
+from models import Draw
 
 # CONFIG
 lottery_blueprint = Blueprint('lottery', __name__, template_folder='templates')
@@ -35,7 +32,6 @@ def add_draw():
         submitted_draw += request.form.get('no' + str(i + 1)) + ' '
     submitted_draw.strip()
 
-
     # create a new draw with the form data.
     new_draw = Draw(user_id=current_user.id, draw=submitted_draw, win=False, round=0, draw_key=current_user.draw_key)
     # add the new draw to the database
@@ -60,9 +56,6 @@ def view_draws():
     decrypted_draws = []
 
     for d in draw_copies:
-        #user = User.query.filter_by(username=d.username).first()
-        #d.decrypt_draw(user.draw_key)
-        #d.decrypt_draw(current_user.draw_key)
         d.draw = decrypt(d.draw, current_user.draw_key)
         decrypted_draws.append(d)
 
@@ -82,7 +75,7 @@ def view_draws():
 @requires_roles('user')
 def check_draws():
     # get played draws
-    played_draws = Draw.query.filter_by(user_id = current_user.id, played=True, id=current_user.id).all()
+    played_draws = Draw.query.filter_by(user_id=current_user.id, played=True, id=current_user.id).all()
 
     draw_copies = copy.deepcopy(played_draws)
 
@@ -113,5 +106,3 @@ def play_again():
 
     flash("All played draws deleted.")
     return lottery()
-
-

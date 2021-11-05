@@ -8,13 +8,13 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_talisman import Talisman
 
 
-#LOGGING
+# LOGGING
 class SecurityFilter(logging.Filter):
     def filter(self, record):
         return "SECURITY" in record.getMessage()
 
 
-fh =logging.FileHandler('lottery.log','w')
+fh = logging.FileHandler('lottery.log', 'w')
 fh.setLevel(logging.WARNING)
 fh.addFilter(SecurityFilter())
 formatter = logging.Formatter('%(asctime)s : %(message)s', '%m/%d/%Y %I:%M:%S %p')
@@ -23,7 +23,6 @@ fh.setFormatter(formatter)
 logger = logging.getLogger('')
 logger.propagate = False
 logger.addHandler(fh)
-
 
 # CONFIG
 app = Flask(__name__)
@@ -39,7 +38,7 @@ csp = {
         '\'self\'',
         'https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.2/css/bulma.min.css'
     ],
-    'script-src':[
+    'script-src': [
         '\'self\'',
         '\'unsafe-inline\''
     ]
@@ -53,13 +52,15 @@ def requires_roles(*roles):
         def wrapped(*args, **kwargs):
             if current_user.role not in roles:
                 logging.warning('SECURITY - Unauthorised access attempt [%s, %s, %s, %s]',
-                             current_user.id,
-                             current_user.username,
-                             current_user.role,
-                             request.remote_addr)
+                                current_user.id,
+                                current_user.username,
+                                current_user.role,
+                                request.remote_addr)
                 return render_template('403.html')
             return f(*args, **kwargs)
+
         return wrapped
+
     return wrapper
 
 
@@ -109,9 +110,11 @@ if __name__ == "__main__":
 
     from models import User
 
+
     @login_manager.user_loader
     def load_user(id):
         return User.query.get(int(id))
+
 
     # BLUEPRINTS
     # import blueprints

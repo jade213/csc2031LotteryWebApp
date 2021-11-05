@@ -38,7 +38,6 @@ def view_all_users():
 @login_required
 @requires_roles('admin')
 def create_winning_draw():
-
     # get current winning draw
     current_winning_draw = Draw.query.filter_by(win=True).first()
     round = 1
@@ -59,9 +58,9 @@ def create_winning_draw():
     # remove any surrounding whitespace
     submitted_draw.strip()
 
-    print(current_user.id, submitted_draw, round, current_user.draw_key)
     # create a new draw object with the form data.
-    new_winning_draw = Draw(user_id=current_user.id, draw=submitted_draw, win=True, round=round, draw_key=current_user.draw_key)
+    new_winning_draw = Draw(user_id=current_user.id, draw=submitted_draw, win=True, round=round,
+                            draw_key=current_user.draw_key)
 
     # add the new winning draw to the database
     db.session.add(new_winning_draw)
@@ -77,7 +76,6 @@ def create_winning_draw():
 @login_required
 @requires_roles('admin')
 def view_winning_draw():
-
     # get winning draw from DB
     current_winning_draw = Draw.query.filter_by(win=True).first()
     current_winning_draw.draw = decrypt(current_winning_draw.draw, current_user.draw_key)
@@ -97,26 +95,22 @@ def view_winning_draw():
 @login_required
 @requires_roles('admin')
 def run_lottery():
-
     # get current unplayed winning draw
     current_winning_draw = Draw.query.filter_by(win=True, played=False).first()
 
     # if current unplayed winning draw exists
     if current_winning_draw:
 
-        current_winning_draw_copy= copy.deepcopy(current_winning_draw)
-        print(current_winning_draw_copy.draw)
+        current_winning_draw_copy = copy.deepcopy(current_winning_draw)
 
         current_winning_draw_copy.draw = decrypt(current_winning_draw_copy.draw, current_user.draw_key)
-            #current_winning_draw_copy.decrypt(draw_key=User.query.filter_by(id=23).first().draw_key)
-        print(current_winning_draw_copy.draw)
+        # current_winning_draw_copy.decrypt(draw_key=User.query.filter_by(id=23).first().draw_key)
 
         # get all unplayed user draws
         user_draws = Draw.query.filter_by(win=False, played=False).all()
 
         results = []
 
-        #print('draw=', user_draws, ' winning=', current_winning_draw)
         # if at least one unplayed user draw exists
         if user_draws:
 
@@ -133,16 +127,9 @@ def run_lottery():
 
                 draw_copies = copy.deepcopy(draw)
                 draw_copies.draw = decrypt(draw_copies.draw, user.draw_key)
-                #print('copy=', draw_copies)
-
-                #for d in draw_copies:
-                    #d.draw=decrypt(d.draw, User.draw_key)
-
-                #print('draw=',draw.draw,' winning=', current_winning_draw)
 
                 # if user draw matches current unplayed winning draw
                 if draw_copies.draw == current_winning_draw_copy.draw:
-
                     # add details of winner to list of results
                     results.append((current_winning_draw.round, draw_copies.draw, draw.user_id, user.email))
 
